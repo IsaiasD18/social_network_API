@@ -13,6 +13,9 @@ app.use(express.json())
 const userRouter = require('./routes/user_routes');
 app.use('/api/users', userRouter);
 
+const thoughtRouter = require('./routes/thought_routes');
+app.use('/api/thought', thoughtRouter);
+
 app.listen(PORT, () => {
     console.log(`API server running on port ${PORT}!`);
   });
