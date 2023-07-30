@@ -52,9 +52,65 @@ router.delete('/:id', getUser, async (req, res) => {
         await res.user.deleteOne();
         res.json({message: 'User Deleted'});
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.json({message: error.message});
     }
 })
+
+router.post('/:userId/friends/:friendId', async (req, res) => {
+    try {
+        const { userId, friendId } = req.params;
+
+        const user = await User.findById(userId);
+        const friend = await User.findById(friendId);
+
+        if (!user || !friend) {
+            return res.json({ message: 'Not found' });
+          }
+      
+          if (user.friends.includes(friendId)) {
+            return res.json({ message: 'Friend already exists in the user\'s friend list' });
+          }
+
+        user.friends.push(friendId);
+        await user.save();
+
+        res.json({ message: 'Friend added successfully', user });
+ 
+    } catch (error) {
+        res.json({message: error.message});
+    }
+})
+
+router.delete('/:userId/friends/:friendId', async (req, res) => {
+    try {
+      const { userId, friendId } = req.params;
+  
+      // Find the user and friend by their  _ids
+      const user = await User.findById(userId);
+      const friend = await User.findById(friendId);
+  
+      // Check if the user and friend exist
+      if (!user || !friend) {
+        return res.json({ message: 'User or friend not found' });
+      }
+  
+      // Check if the friend is in the user's friend list
+      const friendIndex = user.friends.indexOf(friendId);
+      if (friendIndex === -1) {
+        return res.json({ message: 'Friend does not exist in the user\'s friend list' });
+      }
+  
+      // Remove the friend's _id from the user's friends array
+      user.friends.splice(friendIndex, 1);
+      await user.save();
+  
+      res.json({message: 'Friend Removed'});
+    } catch (error) {
+      res.json({ message: error.message });
+    }
+  })
+
+
 
 async function getUser(req, res, next) {
 let user;
