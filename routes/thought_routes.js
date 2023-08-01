@@ -114,6 +114,7 @@ router.delete('/:thoughtId/reactions/:reactionId', async (req, res) => {
     }
 });
 
+//Create a function that will be use to find the thought by its id
 async function getThought(req, res, next) {
     let thought;
     try {

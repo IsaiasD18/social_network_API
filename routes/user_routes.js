@@ -47,7 +47,7 @@ router.put('/:id', getUser, async (req, res) => {
 })
 
 // DELETE to remove user by its _id
-router.delete('/:id', getUser, async (req, res) => {
+router.delete('/:id', getUser, associatedThoughts, async (req, res) => {
     try {
         await res.user.deleteOne();
         res.json({message: 'User Deleted'});
@@ -56,6 +56,7 @@ router.delete('/:id', getUser, async (req, res) => {
     }
 })
 
+// POST to add a new friend to a user's friend list
 router.post('/:userId/friends/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -81,6 +82,7 @@ router.post('/:userId/friends/:friendId', async (req, res) => {
     }
 })
 
+// DELETE to remove a friend from a user's friend list
 router.delete('/:userId/friends/:friendId', async (req, res) => {
     try {
       const { userId, friendId } = req.params;
@@ -111,7 +113,7 @@ router.delete('/:userId/friends/:friendId', async (req, res) => {
   })
 
 
-
+//Create a function that will be use to find the user by its id
 async function getUser(req, res, next) {
 let user;
     try {
@@ -126,5 +128,31 @@ let user;
     res.user = user;
     next();
 }
+
+// Remove a user's associated thoughts when deleted.
+async function associatedThoughts(req, res, next) {
+    try {
+      const userId = req.params.id;
+  
+      // Find user using the _id
+      const user = await User.findById(userId);
+  
+      // Check if the user exists
+      if (user == null) {
+        return res.json({ message: 'User cannot found' });
+      }
+  
+      // Get an array of thought IDs associated with the user
+      const thoughtIds = user.thoughts;
+  
+      // Delete the associated thoughts
+      await Thought.deleteMany({ _id: { $in: thoughtIds } });
+  
+      next();
+    } catch (error) {
+      return res.json({ message: error.message });
+    }
+  }
+  
 
 module.exports = router;
